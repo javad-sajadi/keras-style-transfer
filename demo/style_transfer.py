@@ -1,6 +1,5 @@
-import scipy
-import scipy.io
-import scipy.misc
+import numpy as np
+from PIL import Image
 from matplotlib.pyplot import imshow
 from keras_style_transfer.library.style_transfer import StyleTransfer
 
@@ -10,10 +9,10 @@ def main():
     image_dir_path = './images'
     output_dir_path = './outputs'
 
-    content_image = scipy.misc.imread(image_dir_path + "/louvre_small.jpg")
+    content_image = np.array(Image.open(image_dir_path + "/louvre_small.jpg"))
     imshow(content_image)
 
-    style_image = scipy.misc.imread(image_dir_path + "/monet.jpg")
+    style_image = np.array(Image.open(image_dir_path + "/monet.jpg"))
     imshow(style_image)
 
     vgg19_model_path = pretrained_model_dir_path + "/imagenet-vgg-verydeep-19.mat"

@@ -1,59 +1,82 @@
-# keras-style-transfer
+# Neural Style Transfer with Keras & VGG19
 
-Neural style transfer in tensorflow
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange.svg)](https://www.tensorflow.org/)
+[![Keras](https://img.shields.io/badge/Keras-Deep%20Learning-red.svg)](https://keras.io/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-The source code of the neural style transfer can be found in 
-[keras_style_transfer/library/style_transfer.py](keras_style_transfer/library/style_transfer.py)
+An implementation of **Neural Style Transfer** (Gatys et al., 2015) in Keras / TensorFlow, synthesizing the semantic content of a base photograph with the artistic texture and colors of a painting using pre-trained VGG-19 deep feature representations.
 
-# Usage
+---
 
-The demo code can be found in [demo/style_transfer.py](demo/style_transfer.py)
-It is illustrated below, which takes in a content image and a style image to generate a new image.
+## 🎨 Overview & Mathematical Formulation
 
-```python
-import scipy
-import scipy.io
-import scipy.misc
-from matplotlib.pyplot import imshow
-from keras_style_transfer.library.style_transfer import StyleTransfer
+Neural Style Transfer optimizes an initially noisy or content canvas $G$ to minimize a joint loss function:
 
+$$\mathcal{L}_{\mathrm{total}}(G) = \alpha \, \mathcal{L}_{\mathrm{content}}(C, G) + \beta \, \mathcal{L}_{\mathrm{style}}(S, G)$$
 
-def main():
-    pretrained_model_dir_path = '../training/pretrained-model'
-    image_dir_path = '../training/images'
-    output_dir_path = '../training/outputs'
+### 1. Content Representation
+Feature activations from deep layer `conv4_2` capture high-level semantic layout without fine pixel constraints:
+$$\mathcal{L}_{\mathrm{content}}(C, G) = \frac{1}{4 n_H n_W n_C} \sum_{i,j,k} \left(a^{[l] (C)}_{i,j,k} - a^{[l] (G)}_{i,j,k}\right)^2$$
 
-    content_image = scipy.misc.imread(image_dir_path + "/louvre_small.jpg")
-    imshow(content_image)
+### 2. Style Representation (Gram Matrices)
+Artistic style is modeled by cross-channel correlations (Gram matrices $\mathcal{G}^{[l]}$) across multiple hierarchical layers (`conv1_1`, `conv2_1`, `conv3_1`, `conv4_1`, `conv5_1`):
+$$\mathcal{G}_{i, j}^{[l]} = \sum_{k} a_{i, k}^{[l]} \, a_{j, k}^{[l]}$$
 
-    style_image = scipy.misc.imread(image_dir_path + "/monet.jpg")
-    imshow(style_image)
+---
 
-    vgg19_model_path = pretrained_model_dir_path + "/imagenet-vgg-verydeep-19.mat"
-    ss = StyleTransfer(vgg19_model_path)
+## 🖼️ Visual Demo
 
-    generated_image = ss.fit_and_transform(content_image, style_image,
-                                           output_dir_path=output_dir_path)
+| Content Image | Style Painting | Generated Stylized Synthesis |
+| :---: | :---: | :---: |
+| ![Content](demo/images/louvre_small.jpg) | ![Style](demo/images/monet.jpg) | ![Generated](demo/outputs/generated_image.jpg) |
+| *Louvre Museum* | *Claude Monet* | *Neural Synthesis* |
 
+---
 
-if __name__ == '__main__':
-    main()
+## 🚀 Quick Start
+
+### 1. Installation
+```bash
+git clone https://github.com/javad-sajadi/keras-style-transfer.git
+cd keras-style-transfer
+pip install -r requirements.txt
 ```
 
-Below is the content image:
+### 2. Download Pre-trained VGG-19 Weights
+Download the pre-trained `imagenet-vgg-verydeep-19.mat` weights file:
+```bash
+python -c "from keras_style_transfer.library.download_utils import download_vgg19; download_vgg19('demo/pretrained-model')"
+```
 
-![content-image](demo/images/louvre_small.jpg)
+### 3. Run Style Transfer
+```bash
+cd demo
+python style_transfer.py
+```
 
-Below is the style image:
+---
 
-![style-image](demo/images/monet.jpg)
+## 📁 Repository Structure
 
-Below is the generated image from the content image and the style image
+```
+.
+├── demo/
+│   ├── style_transfer.py         # Modernized execution script with PIL integration
+│   ├── images/                   # Sample content & style images
+│   └── outputs/                  # High-resolution generated stylized outputs
+├── keras_style_transfer/
+│   └── library/
+│       ├── style_transfer.py     # Core optimization engine & loss definitions
+│       ├── nst_utils.py          # Modernized VGG-19 matrix loading & PIL image saving
+│       └── download_utils.py     # Automated weight download utilities
+├── requirements.txt              # Standard Python dependencies
+└── .gitignore                    # Clean Git ignore rules for checkpoints and large weights
+```
 
-![generated-image](demo/outputs/generated_image.jpg)
+---
 
-# Note
-The utility class [keras_style_transfer/library/nst_utils.py](keras_style_transfer/library/nst_utils.py) 
-is taken from [https://github.com/shahariarrabby/deeplearning.ai](https://github.com/shahariarrabby/deeplearning.ai)
-
-
+## 📜 Attribution & License
+- Implemented and modernized by [Javad Sajadi](https://github.com/javad-sajadi).
+- Original NST algorithm by Gatys, Ecker & Bethge (2015).
+- Released under the [MIT License](LICENSE).
